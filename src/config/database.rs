@@ -28,17 +28,17 @@ impl DatabaseConfig {
                     Ok(exe_path) => {
                         match exe_path.parent() {
                             None => {
-                                error!("{}", "Failed to get exe dir.".red());
+                                error!("{}", "Failed to get exe dir.");
                             }
                             Some(exe_dir) => {
                                 let env_path = exe_dir.join(".env");
                                 let _ = dotenv::from_path(&env_path);
                                 match dotenv::from_path(&env_path).ok() {
                                     None => {
-                                        error!("{} -> {:?}", "Failed to load .env file.".red(), env_path);
+                                        error!("{} -> {:?}", "Failed to load .env file.", env_path);
                                     }
                                     Some(_) => {
-                                        info!("{} -> {:?}", "Success to load .env file.".green(), env_path);
+                                        info!("{} -> {:?}", "Success to load .env file.", env_path);
                                     }
                                 }
                             }

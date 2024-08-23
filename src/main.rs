@@ -83,7 +83,7 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
 
             successful_dumps.push((i, db.to_string(), duration));
         } else {
-            error!("{}", format!("Failed to dump database: {}", db).red());
+            error!("{}", format!("Failed to dump database: {}", db));
 
             let stdout = String::from_utf8_lossy(&output.stdout);
             let stderr = String::from_utf8_lossy(&output.stderr);
@@ -125,13 +125,13 @@ async fn main() {
                             successful_dumps.sort_by(|a, b| a.2.cmp(&b.2));
                             // print_databases(&successful_dumps);
                         }
-                        Err(e) => error!("{}", format!("Failed to run mysqldump: {}", e).red()),
+                        Err(e) => error!("{}", format!("Failed to run mysqldump: {}", e)),
                     }
                 }
-                Err(e) => error!("{}", format!("Failed to get databases: {}", e).red()),
+                Err(e) => error!("{}", format!("Failed to get databases: {}", e)),
             }
         }
-        Err(e) => error!("{}", format!("Failed to read .env file: {}", e).red()),
+        Err(e) => error!("{}", format!("Failed to read .env file: {}", e)),
     }
 }
 
