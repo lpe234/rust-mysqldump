@@ -3,6 +3,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use cli_table::{Cell, Color, print_stdout, Style, Table};
+use log::{info, warn};
 use zip::CompressionMethod;
 use zip::write::SimpleFileOptions;
 
@@ -36,7 +37,7 @@ pub fn zip_file(file_path: &str, zip_path: &str) -> std::io::Result<()> {
     let options = SimpleFileOptions::default()
         .compression_method(CompressionMethod::Deflated)
         .unix_permissions(0o755);
-    zip.start_file(std::path::Path::new(file_path).file_name().unwrap().to_str().unwrap(), options)?;
+    zip.start_file(Path::new(file_path).file_name().unwrap().to_str().unwrap(), options)?;
     zip.write_all(&data)?;
 
     Ok(())
@@ -47,7 +48,7 @@ pub fn remove_old_files(db_folder: &str, keep_count: u16) {
 
     // Check if the directory exists
     if !db_path.exists() {
-        println!("Directory '{}' does not exist.", db_folder);
+        info!("Directory '{}' does not exist.", db_folder);
         return;
     }
 
@@ -72,9 +73,9 @@ pub fn remove_old_files(db_folder: &str, keep_count: u16) {
     let mut delete_size = zip_files.len() - keep_count as usize;
     while delete_size > 0 {
         let (zfile, _) = zip_files.remove(0);
-        println!("Deleting file: {}", &zfile.display());
+        info!("Deleting file: {}", &zfile.display());
         fs::remove_file(&zfile).unwrap_or_else(|err| {
-            println!("Error deleting file {}: {}", &zfile.display(), err);
+            warn!("Error deleting file {}: {}", &zfile.display(), err);
         });
         delete_size -= 1;
     }

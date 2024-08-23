@@ -2,6 +2,7 @@ use std::env;
 
 use colored::Colorize;
 use dotenv::dotenv;
+use log::{error, info};
 use mysql::OptsBuilder;
 use serde::Deserialize;
 
@@ -28,17 +29,17 @@ impl DatabaseConfig {
                     Ok(exe_path) => {
                         match exe_path.parent() {
                             None => {
-                                eprintln!("{}", "Failed to get exe dir.".red());
+                                error!("{}", "Failed to get exe dir.".red());
                             }
                             Some(exe_dir) => {
                                 let env_path = exe_dir.join(".env");
                                 let _ = dotenv::from_path(&env_path);
                                 match dotenv::from_path(&env_path).ok() {
                                     None => {
-                                        eprintln!("{} -> {:?}", "Failed to load .env file.".red(), env_path);
+                                        error!("{} -> {:?}", "Failed to load .env file.".red(), env_path);
                                     }
                                     Some(_) => {
-                                        println!("{} -> {:?}", "Success to load .env file.".green(), env_path);
+                                        info!("{} -> {:?}", "Success to load .env file.".green(), env_path);
                                     }
                                 }
                             }

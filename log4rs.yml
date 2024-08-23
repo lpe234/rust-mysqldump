@@ -1,0 +1,13 @@
+appenders:
+  stdout:
+    kind: console
+  file:
+    kind: file
+    path: "log/log.log"
+    encoder:
+      pattern: "{d(%Y-%m-%d %H:%M:%S)} | {({l}):5.5} | {f}:{L} — {m}{n}"
+root:
+  level: debug
+  appenders:
+    - stdout
+    - file
