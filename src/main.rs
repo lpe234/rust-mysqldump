@@ -10,6 +10,7 @@ use mysql::prelude::*;
 use tokio::process::Command;
 
 use config::database::DatabaseConfig;
+use log::{error, info};
 use utils::output::print_databases;
 
 mod config;
@@ -55,7 +56,7 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
 
         if output.status.success() {
             let duration = start.elapsed().as_micros();
-            println!("Successfully dumped database: {} (took {} microseconds)", db, duration);
+            info!("Successfully dumped database: {} (took {} microseconds)", db, duration);
 
             let mut filename = format!("{}/{}.sql", &config.db_folder, db);
             let mut zip_filename = format!("{}/{}.zip", &config.db_folder, db);
@@ -70,6 +71,7 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
             file.write_all(&output.stdout)?;
 
             utils::output::zip_file(&filename, &zip_filename)?;
+            info!("Successfully zipped database: {}", zip_filename);
             // remove raw file
             fs::remove_file(&filename).ok();
 
@@ -78,13 +80,13 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
             
             successful_dumps.push((i, db.to_string(), duration));
         } else {
-            eprintln!("{}", format!("Failed to dump database: {}", db).red());
+            error!("{}", format!("Failed to dump database: {}", db).red());
 
             let stdout = String::from_utf8_lossy(&output.stdout);
             let stderr = String::from_utf8_lossy(&output.stderr);
 
-            println!("STDOUT: {}", stdout);
-            println!("STDERR: {}", stderr);
+            info!("STDOUT: {}", stdout);
+            info!("STDERR: {}", stderr);
         }
     }
 
@@ -103,6 +105,10 @@ async fn get_databases(config: &DatabaseConfig) -> Result<Vec<String>, Box<dyn s
 
 #[tokio::main]
 async fn main() {
+    log4rs::init_file("log4rs.yml", Default::default()).unwrap();
+    info!("");
+    info!("Starting mysqldump...");
+    //
     match DatabaseConfig::from_env() {
         Ok(config) => {
             match get_databases(&config).await {
@@ -112,13 +118,13 @@ async fn main() {
                             successful_dumps.sort_by(|a, b| a.2.cmp(&b.2));
                             print_databases(&successful_dumps);
                         }
-                        Err(e) => eprintln!("{}", format!("Failed to run mysqldump: {}", e).red()),
+                        Err(e) => error!("{}", format!("Failed to run mysqldump: {}", e).red()),
                     }
                 }
-                Err(e) => eprintln!("{}", format!("Failed to get databases: {}", e).red()),
+                Err(e) => error!("{}", format!("Failed to get databases: {}", e).red()),
             }
         }
-        Err(e) => eprintln!("{}", format!("Failed to read .env file: {}", e).red()),
+        Err(e) => error!("{}", format!("Failed to read .env file: {}", e).red()),
     }
 }
 
