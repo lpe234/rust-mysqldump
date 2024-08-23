@@ -12,6 +12,7 @@ pub struct DatabaseConfig {
     pub db_exports: Vec<String>,
     pub db_forgets: Vec<String>,
     pub db_folder: String,
+    pub db_backup_file_time_format: String
 }
 
 impl DatabaseConfig {
@@ -36,6 +37,7 @@ impl DatabaseConfig {
             db_folder: env::var("DB_FOLDER")?,
             db_exports,
             db_forgets,
+            db_backup_file_time_format: env::var("DB_BACKUP_FILE_TIME_FORMAT")?,
         })
     }
 

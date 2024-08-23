@@ -1,16 +1,19 @@
-use mysql::prelude::*;
-use mysql::*;
-use tokio::process::Command;
-mod config;
-use colored::Colorize;
-use config::database::DatabaseConfig;
-mod utils;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::time::Instant;
+
+use chrono::Local;
+use colored::Colorize;
+use mysql::*;
+use mysql::prelude::*;
+use tokio::process::Command;
+
+use config::database::DatabaseConfig;
 use utils::output::print_databases;
 
+mod config;
+mod utils;
 async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::io::Result<Vec<(usize, String, u128)>> {
     if !std::path::Path::new(&config.db_folder).exists() {
         fs::create_dir_all(&config.db_folder)?;
@@ -42,20 +45,26 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
             &config.db_password,
             db
         );
-        
+
         let args: Vec<&str> = command.split_whitespace().collect();
-        
+
         let output = Command::new(&args[0])
             .args(&args[1..])
             .output()
-            .await?;        
+            .await?;
 
         if output.status.success() {
             let duration = start.elapsed().as_micros();
             println!("Successfully dumped database: {} (took {} microseconds)", db, duration);
-            
-            let filename = format!("{}/{}.sql", &config.db_folder, db);
-            let zip_filename = format!("{}/{}.zip", &config.db_folder, db);
+
+            let mut filename = format!("{}/{}.sql", &config.db_folder, db);
+            let mut zip_filename = format!("{}/{}.zip", &config.db_folder, db);
+            //
+            if !&config.db_backup_file_time_format.is_empty() {
+                let time_str = Local::now().format(&config.db_backup_file_time_format);
+                filename = format!("{}/{}_{}.sql", &config.db_folder, db, time_str);
+                zip_filename = format!("{}/{}_{}.zip", &config.db_folder, db, time_str);
+            }
 
             let mut file = File::create(&filename)?;
             file.write_all(&output.stdout)?;
@@ -115,7 +124,7 @@ fn test_get_databases() {
     rt.block_on(async {
         let config = DatabaseConfig::from_env().unwrap();
         // println!("Config: {:?}", config);
-        
+
         let opts = config.mysql_opts();
         let pool = Pool::new(opts).unwrap();
         let mut conn = pool.get_conn().unwrap();
@@ -131,7 +140,7 @@ fn test_get_databases() {
         // Check the results
         // assert_eq!(databases, vec!["db1", "db2"]);
         assert!(databases.contains(&"db1".to_string()));
-        assert!(databases.contains(&"db2".to_string()));        
+        assert!(databases.contains(&"db2".to_string()));
 
         // Cleanup
         conn.query_drop("DROP DATABASE db1").unwrap();
