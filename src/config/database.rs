@@ -15,7 +15,6 @@ pub struct DatabaseConfig {
     pub db_forgets: Vec<String>,
     pub db_folder: String,
     pub db_backup_file_time_format: String,
-    pub db_backup_file_keep_size: u16,
 }
 
 impl DatabaseConfig {
@@ -69,7 +68,6 @@ impl DatabaseConfig {
             db_exports,
             db_forgets,
             db_backup_file_time_format: env::var("DB_BACKUP_FILE_TIME_FORMAT")?,
-            db_backup_file_keep_size: env::var("DB_BACKUP_FILE_KEEP_SIZE")?.parse::<u16>().unwrap(),
         })
     }
 

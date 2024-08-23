@@ -73,8 +73,8 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
             // remove raw file
             fs::remove_file(&filename).ok();
 
-            // try remove old files
-            utils::output::remove_old_files(&config.db_folder, config.db_backup_file_keep_size);
+            // try remove old files  // FIXME: hardcode 7
+            utils::output::remove_old_files(&config.db_folder, 7);
             
             successful_dumps.push((i, db.to_string(), duration));
         } else {

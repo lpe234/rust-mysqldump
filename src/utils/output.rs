@@ -3,6 +3,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use cli_table::{Cell, Color, print_stdout, Style, Table};
+use zip::AesMode::Aes256;
 use zip::CompressionMethod;
 use zip::write::SimpleFileOptions;
 
@@ -35,6 +36,8 @@ pub fn zip_file(file_path: &str, zip_path: &str) -> std::io::Result<()> {
 
     let options = SimpleFileOptions::default()
         .compression_method(CompressionMethod::Deflated)
+        // FIXME: hardcode metareal.cn
+        .with_aes_encryption(Aes256, "metareal.cn")
         .unix_permissions(0o755);
     zip.start_file(std::path::Path::new(file_path).file_name().unwrap().to_str().unwrap(), options)?;
     zip.write_all(&data)?;

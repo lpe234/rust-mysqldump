@@ -25,7 +25,6 @@ Rust MySQL Dump is a command-line application for quickly backing up your MySQL 
     - `DB_EXPORTS`: A comma-separated list of databases to backup. Use `*` to backup all databases.
     - `DB_FORGETS`: A comma-separated list of databases to exclude from the backup.
     - `DB_BACKUP_FILE_TIME_FORMAT`: The format of the time in backup file name. Defaults to `%Y-%m-%d_%H-%M-%S`.
-    - `DB_BACKUP_FILE_KEEP_SIZE`: The number of backup files to keep. Defaults to `10`.
 
 2. Run the application:
 
