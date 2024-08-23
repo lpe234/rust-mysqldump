@@ -5,13 +5,12 @@ use std::time::Instant;
 
 use chrono::Local;
 use colored::Colorize;
+use log::{error, info};
 use mysql::*;
 use mysql::prelude::*;
 use tokio::process::Command;
 
 use config::database::DatabaseConfig;
-use log::{error, info};
-use utils::output::print_databases;
 
 mod config;
 mod utils;
@@ -77,7 +76,7 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
 
             // try remove old files  // FIXME: hardcode 7
             utils::output::remove_old_files(&config.db_folder, 7);
-            
+
             successful_dumps.push((i, db.to_string(), duration));
         } else {
             error!("{}", format!("Failed to dump database: {}", db).red());
@@ -116,7 +115,7 @@ async fn main() {
                     match run_mysqldump(&config, databases).await {
                         Ok(mut successful_dumps) => {
                             successful_dumps.sort_by(|a, b| a.2.cmp(&b.2));
-                            print_databases(&successful_dumps);
+                            // print_databases(&successful_dumps);
                         }
                         Err(e) => error!("{}", format!("Failed to run mysqldump: {}", e).red()),
                     }

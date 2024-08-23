@@ -50,7 +50,8 @@ impl DatabaseConfig {
             Some(_) => {}
         }
 
-        let db_exports: Vec<String> = env::var("DB_EXPORTS")?
+        // FIXME: hardcode toumen
+        let db_exports: Vec<String> = "toumen"
             .split(',')
             .map(|s| s.to_string())
             .collect();

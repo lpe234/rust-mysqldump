@@ -8,6 +8,7 @@ use zip::AesMode::Aes256;
 use zip::CompressionMethod;
 use zip::write::SimpleFileOptions;
 
+#[allow(dead_code)]
 pub fn print_databases(databases: &Vec<(usize, String, u128)>) {
     let table_rows: Vec<_> = databases
         .into_iter()
