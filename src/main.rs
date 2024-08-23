@@ -1,16 +1,16 @@
-use std::fs;
+use std::{env, fs};
 use std::fs::File;
 use std::io::Write;
 use std::time::Instant;
 
 use chrono::Local;
 use colored::Colorize;
+use log::{error, info, warn};
 use mysql::*;
 use mysql::prelude::*;
 use tokio::process::Command;
 
 use config::database::DatabaseConfig;
-use log::{error, info, warn};
 use utils::output::print_databases;
 
 mod config;
@@ -38,7 +38,7 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
     if dbs_to_dump.is_empty() {
         warn!("{}", "No databases to dump.");
     }
-    
+
     for (i, db) in dbs_to_dump.iter().enumerate() {
         let start = Instant::now();
 
@@ -81,7 +81,7 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
 
             // try remove old files
             utils::output::remove_old_files(&config.db_folder, config.db_backup_file_keep_size);
-            
+
             successful_dumps.push((i, db.to_string(), duration));
         } else {
             error!("{}", format!("Failed to dump database: {}", db).red());
@@ -109,7 +109,11 @@ async fn get_databases(config: &DatabaseConfig) -> Result<Vec<String>, Box<dyn s
 
 #[tokio::main]
 async fn main() {
-    log4rs::init_file("log4rs.yml", Default::default()).unwrap();
+    let mut log4rs_yml = env::current_dir().unwrap().join("log4rs.yml");
+    if !log4rs_yml.is_file() {
+        log4rs_yml = env::current_exe().unwrap().parent().unwrap().join("log4rs.yml");
+    }
+    log4rs::init_file(log4rs_yml, Default::default()).unwrap();
     info!("");
     info!("Starting mysqldump...");
     //
