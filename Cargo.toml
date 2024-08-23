@@ -13,8 +13,8 @@ repository = "https://github.com/tomshaw/rust-mysqldump"
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 dotenv = "0.15.0"
-mysql = "24.0.0"
+mysql = "25.0.1"
 colored = "2.0.4"
 cli-table = "0.4.7"
-zip = "0.5"
+zip = "2.2.0"
 chrono = "0.4.38"

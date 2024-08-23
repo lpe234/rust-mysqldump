@@ -70,6 +70,9 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
             file.write_all(&output.stdout)?;
 
             utils::output::zip_file(&filename, &zip_filename)?;
+            
+            // remove raw file
+            fs::remove_file(&filename).ok();
 
             successful_dumps.push((i, db.to_string(), duration));
         } else {
