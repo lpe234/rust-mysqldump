@@ -5,7 +5,7 @@ use std::time::Instant;
 
 use chrono::Local;
 use colored::Colorize;
-use log::{error, info};
+use log::{error, info, warn};
 use mysql::*;
 use mysql::prelude::*;
 use tokio::process::Command;
@@ -33,6 +33,10 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
     };
 
     let mut successful_dumps = Vec::new();
+
+    if dbs_to_dump.is_empty() {
+        warn!("{}", "No databases to dump.");
+    }
 
     for (i, db) in dbs_to_dump.iter().enumerate() {
         let start = Instant::now();
