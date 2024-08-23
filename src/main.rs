@@ -4,7 +4,6 @@ use std::io::Write;
 use std::time::Instant;
 
 use chrono::Local;
-use colored::Colorize;
 use log::{error, info, warn};
 use mysql::*;
 use mysql::prelude::*;

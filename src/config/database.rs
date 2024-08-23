@@ -1,6 +1,5 @@
 use std::env;
 
-use colored::Colorize;
 use dotenv::dotenv;
 use log::{error, info};
 use mysql::OptsBuilder;
