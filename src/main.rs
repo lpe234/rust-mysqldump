@@ -1,4 +1,4 @@
-use std::fs;
+use std::{env, fs};
 use std::fs::File;
 use std::io::Write;
 use std::time::Instant;
@@ -108,7 +108,11 @@ async fn get_databases(config: &DatabaseConfig) -> Result<Vec<String>, Box<dyn s
 
 #[tokio::main]
 async fn main() {
-    log4rs::init_file("log4rs.yml", Default::default()).unwrap();
+    let mut log4rs_yml = env::current_dir().unwrap().join("log4rs.yml");
+    if !log4rs_yml.is_file() {
+        log4rs_yml = env::current_exe().unwrap().parent().unwrap().join("log4rs.yml");
+    }
+    log4rs::init_file(log4rs_yml, Default::default()).unwrap();
     info!("");
     info!("Starting mysqldump...");
     //
