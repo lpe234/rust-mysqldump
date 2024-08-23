@@ -1,7 +1,9 @@
 use std::env;
+
+use colored::Colorize;
 use dotenv::dotenv;
-use serde::Deserialize;
 use mysql::OptsBuilder;
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct DatabaseConfig {
@@ -12,12 +14,40 @@ pub struct DatabaseConfig {
     pub db_exports: Vec<String>,
     pub db_forgets: Vec<String>,
     pub db_folder: String,
-    pub db_backup_file_time_format: String
+    pub db_backup_file_time_format: String,
 }
 
 impl DatabaseConfig {
     pub fn from_env() -> Result<Self, env::VarError> {
-        dotenv().ok();
+        // try read .env file
+        match dotenv().ok() {
+            None => {
+                // cannot find.env file in working directory
+                match env::current_exe() {
+                    Ok(exe_path) => {
+                        match exe_path.parent() {
+                            None => {
+                                eprintln!("{}", "Failed to get exe dir.".red());
+                            }
+                            Some(exe_dir) => {
+                                let env_path = exe_dir.join(".env");
+                                let _ = dotenv::from_path(&env_path);
+                                match dotenv::from_path(&env_path).ok() {
+                                    None => {
+                                        eprintln!("{} -> {:?}", "Failed to load .env file.".red(), env_path);
+                                    }
+                                    Some(_) => {
+                                        println!("{} -> {:?}", "Success to load .env file.".green(), env_path);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Err(_) => {}
+                }
+            }
+            Some(_) => {}
+        }
 
         let db_exports: Vec<String> = env::var("DB_EXPORTS")?
             .split(',')
@@ -57,5 +87,4 @@ impl DatabaseConfig {
             .pass(Some(&self.db_password));
         builder
     }
-    
 }
