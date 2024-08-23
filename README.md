@@ -24,6 +24,7 @@ Rust MySQL Dump is a command-line application for quickly backing up your MySQL 
     - `DB_PASSWORD`: The password to use when connecting to your MySQL server.
     - `DB_EXPORTS`: A comma-separated list of databases to backup. Use `*` to backup all databases.
     - `DB_FORGETS`: A comma-separated list of databases to exclude from the backup.
+    - `DB_BACKUP_FILE_TIME_FORMAT`: The format of the time in backup file name. Defaults to `%Y-%m-%d_%H-%M-%S`.
 
 2. Run the application:
 
@@ -40,6 +41,7 @@ This utility depends on the following Rust crates:
 - `colored`: To colorize the output to the terminal.
 - `dotenv`: To load the database configuration from environment variables.
 - `serde`: To deserialize the database configuration.
+- `chrono`: To measure the time taken to export each database.
 
 ## Contributing
 
