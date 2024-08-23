@@ -70,10 +70,12 @@ async fn run_mysqldump(config: &DatabaseConfig, databases: Vec<String>) -> std::
             file.write_all(&output.stdout)?;
 
             utils::output::zip_file(&filename, &zip_filename)?;
-            
             // remove raw file
             fs::remove_file(&filename).ok();
 
+            // try remove old files
+            utils::output::remove_old_files(&config.db_folder, config.db_backup_file_keep_size);
+            
             successful_dumps.push((i, db.to_string(), duration));
         } else {
             eprintln!("{}", format!("Failed to dump database: {}", db).red());

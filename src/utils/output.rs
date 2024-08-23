@@ -1,4 +1,6 @@
+use std::fs;
 use std::io::Write;
+use std::path::{Path, PathBuf};
 
 use cli_table::{Cell, Color, print_stdout, Style, Table};
 use zip::CompressionMethod;
@@ -38,4 +40,42 @@ pub fn zip_file(file_path: &str, zip_path: &str) -> std::io::Result<()> {
     zip.write_all(&data)?;
 
     Ok(())
+}
+
+pub fn remove_old_files(db_folder: &str, keep_count: u16) {
+    let db_path = Path::new(db_folder);
+
+    // Check if the directory exists
+    if !db_path.exists() {
+        println!("Directory '{}' does not exist.", db_folder);
+        return;
+    }
+
+    // Get all .zip files in the directory
+    let mut zip_files: Vec<(PathBuf, std::time::SystemTime)> = fs::read_dir(db_path)
+        .unwrap()
+        .filter_map(|entry| {
+            let path = entry.unwrap().path();
+            if path.extension().and_then(|e| e.to_str()) == Some("zip") {
+                let metadata = fs::metadata(&path).ok()?;
+                Some((path, metadata.created().unwrap_or(std::time::UNIX_EPOCH)))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    // Sort the .zip files by creation time
+    zip_files.sort_by(|(_, time1), (_, time2)| time1.cmp(time2));
+
+    // Keep the most recent files and delete the rest
+    let mut delete_size = zip_files.len() - keep_count as usize;
+    while delete_size > 0 {
+        let (zfile, _) = zip_files.remove(0);
+        println!("Deleting file: {}", &zfile.display());
+        fs::remove_file(&zfile).unwrap_or_else(|err| {
+            println!("Error deleting file {}: {}", &zfile.display(), err);
+        });
+        delete_size -= 1;
+    }
 }
