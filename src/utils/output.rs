@@ -70,7 +70,10 @@ pub fn remove_old_files(db_folder: &str, keep_count: u16) {
     zip_files.sort_by(|(_, time1), (_, time2)| time1.cmp(time2));
 
     // Keep the most recent files and delete the rest
-    let mut delete_size = zip_files.len() - keep_count as usize;
+    let mut delete_size = 0;
+    if zip_files.len() > keep_count as usize {
+        delete_size = zip_files.len() - keep_count as usize;
+    }
     while delete_size > 0 {
         let (zfile, _) = zip_files.remove(0);
         info!("Deleting file: {}", &zfile.display());
