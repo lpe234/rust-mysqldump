@@ -3,11 +3,12 @@ use std::fs::File;
 use std::io::Write;
 use std::time::Instant;
 
-use chrono::Local;
+use chrono::{Local, TimeDelta, Timelike};
 use log::{error, info, warn};
 use mysql::*;
 use mysql::prelude::*;
 use tokio::process::Command;
+use tokio::time;
 
 use config::database::DatabaseConfig;
 
@@ -105,13 +106,7 @@ async fn get_databases(config: &DatabaseConfig) -> Result<Vec<String>, Box<dyn s
     Ok(databases)
 }
 
-#[tokio::main]
-async fn main() {
-    let mut log4rs_yml = env::current_dir().unwrap().join("log4rs.yml");
-    if !log4rs_yml.is_file() {
-        log4rs_yml = env::current_exe().unwrap().parent().unwrap().join("log4rs.yml");
-    }
-    log4rs::init_file(log4rs_yml, Default::default()).unwrap();
+async fn dump_task() {
     info!("");
     info!("Starting mysqldump...");
     //
@@ -131,6 +126,59 @@ async fn main() {
             }
         }
         Err(e) => error!("{}", format!("Failed to read .env file: {}", e)),
+    }
+}
+
+async fn schedule() {
+    let now = Local::now();
+    let target_time = now
+        .with_hour(0)
+        .and_then(|t| t.with_minute(0))
+        .and_then(|t| t.with_second(0))
+        .unwrap_or(now);
+    //
+    let next_run_time = if target_time > now {
+        target_time
+    } else {
+        target_time + TimeDelta::days(1)
+    };
+    //
+    let duration = (next_run_time - now).to_std().unwrap();
+    info!("Next run at: {:?}, has {:?} seconds left.", next_run_time, duration);
+    time::sleep(duration).await;
+
+    //
+    dump_task().await;
+    info!("");
+}
+
+async fn print_banner() {
+    println!("
+ ######  #     #  #####  #######    #     #        #####   #####  #             ######
+ #     # #     # #     #    #       ##   ## #   # #     # #     # #             #     # #    # #    # #####
+ #     # #     # #          #       # # # #  # #  #       #     # #             #     # #    # ##  ## #    #
+ ######  #     #  #####     #       #  #  #   #    #####  #     # #       ##### #     # #    # # ## # #    #
+ #   #   #     #       #    #       #     #   #         # #   # # #             #     # #    # #    # #####
+ #    #  #     # #     #    #       #     #   #   #     # #    #  #             #     # #    # #    # #
+ #     #  #####   #####     #       #     #   #    #####   #### # #######       ######   ####  #    # #
+ ")
+}
+
+
+#[tokio::main]
+async fn main() {
+    let mut log4rs_yml = env::current_dir().unwrap().join("log4rs.yml");
+    if !log4rs_yml.is_file() {
+        log4rs_yml = env::current_exe().unwrap().parent().unwrap().join("log4rs.yml");
+    }
+    log4rs::init_file(log4rs_yml, Default::default()).unwrap();
+    //
+    print_banner().await;
+    info!("Version: 0.0.1");
+    info!("Author: lpe234");
+    info!("MySQL Dump Schedule is running now...");
+    loop {
+        schedule().await;
     }
 }
 
