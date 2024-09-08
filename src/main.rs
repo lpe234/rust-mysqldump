@@ -165,6 +165,20 @@ async fn print_banner() {
 }
 
 
+async fn check_args() -> bool {
+    let args: Vec<String> = env::args().collect();
+    if args.len() > 1 {
+        if args[1].eq_ignore_ascii_case("-t") {
+            dump_task().await;
+            return false;
+        }
+        error!("Unknown command: {}", args[1]);
+        return false;
+    }
+    return true;
+}
+
+
 #[tokio::main]
 async fn main() {
     let mut log4rs_yml = env::current_dir().unwrap().join("log4rs.yml");
@@ -174,11 +188,13 @@ async fn main() {
     log4rs::init_file(log4rs_yml, Default::default()).unwrap();
     //
     print_banner().await;
-    info!("Version: 0.0.1");
     info!("Author: lpe234");
+    info!("Version: 0.0.1");
     info!("MySQL Dump Schedule is running now...");
-    loop {
-        schedule().await;
+    if check_args().await {
+        loop {
+            schedule().await;
+        }
     }
 }
 
